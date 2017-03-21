@@ -1,0 +1,219 @@
+# Script SCO Unix
+# Author: Marcelo Diaz
+#
+#
+#
+clear
+echo " *********************************************************************"
+echo " *- - - - - - - - - - - >   Cut from  < - - - - - - - - - - - - -*"
+echo " *********************************************************************"
+echo "  Current directory: `pwd`"
+echo " *********************************************************************"
+diract=`pwd`          
+lis="$1"
+desde="$1"
+hasta="$1"
+lpi="$1"
+while test -z "$lis" 
+ do
+	  
+	  tput cup 6  
+	  echo "              |"
+	  tput cup 7  
+	  echo "              |_ [1mList Name :[0m\c"
+      read lis 
+      if test ! -z "$lis"
+         then
+            archivo=`echo $diract/$lis` 
+            if test -f $archivo
+               then
+                 tput cup 8
+                 echo "file:$diract/$lis .....ok"
+                 sleep 1
+                 tput cup 8
+                 echo "                                                    "
+               else
+                 tput cup 8
+                 echo "file:$diract/$lis .....path incorrect!!"
+                 sleep 1
+                 tput cup 8                                                              
+                 echo "                                                                                      "
+                 lis="$1"
+            fi                    
+      fi      
+ done
+while test -z "$desde"
+ do
+      tput cup 8
+      echo "              |"
+      tput cup 9
+      echo "              |_ [1mCut from Page:[0m\c "
+      read desde
+      if test ! -z "$desde"
+        then
+     	 if test $desde -lt 1 
+        	 then
+            	tput cup 10
+            	echo " Value must be great than 0" 
+           	    sleep 1
+            	tput cup 10
+            	echo "                                      "
+            	desde="$1"
+         fi
+      fi        
+          
+ done
+while true
+  do
+      marca=0
+      marca2=0
+      tput cup 23
+      echo "[1mif ommit [0m[1;5mFROM[0m[1m asumme total page....[0m"
+      #hasta=`wc -l $lis | awk '{ print $1 }'`
+      tput cup 10
+      echo "              | "
+      tput cup 11
+      echo "              |_ [1mCut page to:[0m\c "
+      
+      #echo "$hasta\c"
+      read hasta
+      if test ! -z "$hasta"
+         then
+     	   if test $hasta -lt 1 
+              then
+            	tput cup 12
+            	echo "Value must be greater than 0" 
+           	    sleep 1
+            	tput cup 12
+            	echo "                                         "
+            	hasta="$1"
+                marca=1
+           fi
+           if test $hasta -lt $desde
+              then
+                 tput cup 12
+                 echo " Value must be grater than $desde" 
+           	     sleep 1
+            	 tput cup 12
+                 echo "                                         "
+            	 hasta="$1"
+                 marca2=1
+           fi
+         else
+             hasta=0;
+             break;
+      fi
+      if test $marca -eq 1 -o $marca2 -eq 1
+          then
+             tput cup 24
+             echo "*"
+           else
+              break;     
+      fi
+  
+  done
+
+while test -z "$lpi"
+ do
+     tput cup 12
+     echo "              |"
+     tput cup 13
+     echo "              |_ [1mLPI:[0m\c"
+     read lpi
+     if test ! -z "$lpi"
+       then
+     	if test $lpi -eq 6  -o  $lpi -eq 8 
+        	then
+            	tput cup 14
+        	else
+           	    tput cup 14 
+        	    echo " lpi 6 or 8 only....    "
+            	sleep 1
+           		tput cup 14
+            	echo "                              "
+            	lpi="$1"
+    	fi       
+     fi
+ done
+tput cup 23
+echo "                                                                " 
+
+if test $hasta -eq 0
+   then
+    case $lpi in
+	
+	   8)
+	      echo "\n\n\n"
+	      echo "GENERATING PAGE FROM  [1m $desde [0mIN[1m $lis-1[0m \n "
+	      cat $lis | awk ' BEGIN {
+    	  n = '$desde'
+          m = n - 1
+          pagina = 96 * m
+                                  }
+          {      
+           if ( NR > pagina )
+               print $0
+          }
+            ' > $lis-1
+            echo "[1mOK ...[0m";;
+       6)  
+     
+         #cl=`wc -l $lis | awk ' { print $1 } '` 
+         echo "\n\n\n"
+	     echo "GENERATING PAGE [1m $desde [0mIN[1m $lis-1[0m \n "
+         cat $lis | awk ' BEGIN {
+    	  n = '$desde'
+          m = n - 1
+          pagina = 72 * m
+                                }
+          {
+            x = NR - 2
+            if ( x > pagina )      
+                print $0 
+          }
+            ' > $lis-1
+            echo "[1mOK ...[0m";;
+   
+     esac 
+   else 
+     case $lpi in
+	
+	   8)
+	      echo "\n\n\n"
+	      echo "GENERATING PAGE[1m $desde[0m to [1m$hasta[0m  IN[1m $lis-1[0m \n "
+	      cat $lis | awk ' BEGIN {
+    	  n = '$desde'
+          k = '$hasta'
+          m = n - 1
+          pagina = 96 * m
+          paginaf= 96 * k
+                                 }
+          {      
+           if ( NR > pagina )
+               if ( NR < paginaf)
+                   print $0
+          }
+            ' > $lis-1
+            echo "[1mOK ...[0m";;
+       6)  
+     
+         #cl=`wc -l $lis | awk ' { print $1 } '` 
+         echo "\n\n\n"
+	     echo "GENERATING PAGE[1m $desde [0mto [1m$hasta[0m IN[1m $lis-1[0m \n "
+         cat $lis | awk ' BEGIN {
+    	  n = '$desde'
+          m = n - 1
+          k = '$hasta'
+          pagina = 72 * m
+          paginaf = 72 * k
+          }
+          {
+            x = NR - 2
+            if ( x > pagina )      
+                if ( x < paginaf) 
+                    print $0 
+          }
+            ' > $lis-1
+            echo "[1mOK ...[0m";;
+    esac 
+fi
